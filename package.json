@@ -1,0 +1,22 @@
+{
+  "name": "dashboard-analsysis",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@duneanalytics/client-sdk": "^0.2.0",
+    "add": "^2.0.6",
+    "puppeteer": "^22.11.2",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "slugify": "^1.6.6",
+    "tough-cookie": "^4.1.4",
+    "yarn": "^1.22.22"
+  }
+}
