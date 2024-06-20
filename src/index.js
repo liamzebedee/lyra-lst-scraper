@@ -181,60 +181,113 @@ async function run() {
 
     const addy = '0x0f1dfef1a40557d279d0de6e49ab306891a638b8'
 
-    const duneDashboards = `Puffer restakers
-https://dune.com/queries/3413348/5730543
+//     const duneDashboards = `Puffer restakers
+// https://dune.com/queries/3413348/5730543
 
-Renzo
-https://dune.com/queries/3367963/5649933 
+// Renzo
+// https://dune.com/queries/3367963/5649933 
 
-Swell
-https://dune.com/queries/3404983/5715132
+// Swell
+// https://dune.com/queries/3404983/5715132
 
-Vector
-https://dune.com/queries/3425885/5752702
+// Vector
+// https://dune.com/queries/3425885/5752702
 
-Eigenpie
-https://dune.com/queries/3425351/5751821
+// Eigenpie
+// https://dune.com/queries/3425351/5751821
 
-Genesis
-https://dune.com/queries/3416842/5736858 
+// Genesis
+// https://dune.com/queries/3416842/5736858 
 
-Kelp
-https://dune.com/queries/3368811/5651549
+// Kelp
+// https://dune.com/queries/3368811/5651549
 
-Prime Staked restakers stats
-https://dune.com/queries/3427514/5755909`.split('\n\n').map(x => x.trim().split('\n'))
-console.log(duneDashboards)
+// Prime Staked restakers stats
+// https://dune.com/queries/3427514/5755909`.split('\n\n').map(x => x.trim().split('\n'))
+// console.log(duneDashboards)
 
-    for(let dashboard of duneDashboards) {
-        console.log(dashboard)
-        // 1. Get all addys from the dashboard.
-        // 2. For each one, get the tags from Arkham
-        // 3. Dump them to a TSV.
-        const addys = await getDuneDashboardAddys({
-            page,
-            url: dashboard[1]
-        })
+//     for(let dashboard of duneDashboards) {
+//         console.log(dashboard)
+//         // 1. Get all addys from the dashboard.
+//         // 2. For each one, get the tags from Arkham
+//         // 3. Dump them to a TSV.
+//         const addys = await getDuneDashboardAddys({
+//             page,
+//             url: dashboard[1]
+//         })
 
-        // Write line-by-line to file.
-        const fs = require('fs');
-        const slugify = require('slugify')
-        const fname = slugify(dashboard[0]) + '.tsv'
+//         // Write line-by-line to file.
+//         const fs = require('fs');
+//         const slugify = require('slugify')
+//         const fname = slugify(dashboard[0]) + '.tsv'
 
-        const columns = ['Address', 'Arkham - Entity', 'Arkham - Potential Match', 'Arkham - Twitter', 'Arkham - Tags'].join('\t')
-        fs.appendFileSync(fname, `${columns}\n`)
+//         const columns = ['Address', 'Arkham - Entity', 'Arkham - Potential Match', 'Arkham - Twitter', 'Arkham - Tags'].join('\t')
+//         fs.appendFileSync(fname, `${columns}\n`)
+
+//         // Scraping guidelines:
+//         // - 30s + rand() between each request
+//         // - If error, retry after 25s + rand()*30s
+//         for(let item of addys.slice(0, 30)) {
+//             await new Promise(resolve => setTimeout(resolve, 5100 + Math.random() * 3000))
+
+//             const addy = item.restaker
+//             console.log(addy)
+
+//             // write each line to a csv
+//             while(true) {
+//                 try {
+//                     const arkhamData = await extractArkhamData({ page, addy })
+//                     const arkhamName = arkhamData.arkhamEntity ? arkhamData.arkhamEntity.name : ''
+//                     const arkhamPotentialMatch = arkhamData.predictedEntity ? "AI MATCH" : ''
+//                     const arkhamTwitter = arkhamData.arkhamEntity ? arkhamData.arkhamEntity.twitter : ''
+//                     const arkhamTags = arkhamData.populatedTags ? arkhamData.populatedTags.map(x => x.label).join(', ') : ''
+
+//                     const line = [addy, arkhamName, arkhamTwitter, arkhamTags].join('\t')
+//                     fs.appendFileSync(fname, `${line}\n`)
+//                     break
+
+//                 } catch(err) {
+//                     const delay = 25000 + Math.random() * 30000
+//                     console.log(`retrying in ${delay/1000}s`)
+//                     await new Promise(resolve => setTimeout(resolve, delay))
+//                     continue
+//                 }
+//             }
+//         }
+//     }
+
+
+
+    // Write line-by-line to file.
+    const fs = require('fs');
+    const slugify = require('slugify')
+    const fname = slugify('output') + '.tsv'
+
+    const columns = ['Address', 'Arkham - Entity', 'Arkham - Potential Match', 'Arkham - Twitter', 'Arkham - Tags'].join('\t')
+    fs.appendFileSync(fname, `${columns}\n`)
+
+    const entries = [
+        ['PT Weeth June 27', 'export-tokenholders-for-contract-0xf32e58f92e60f4b0a37a69b95d642a471365eae8.csv'],
+        ['PT Weeth Sep 26', 'export-tokenholders-for-contract-0xc8edd52d0502aa8b4d5c77361d4b3d300e8fc81c.csv'],
+        ['PT Weeth Dec 26', 'export-tokenholders-for-contract-0x7d372819240d14fb477f17b964f95f33beb4c704.csv'],
+        ['PT sUSDe July 25', 'export-tokenholders-for-contract-0x107a2e3cd2bb9a32b9ee2e4d51143149f8367eba.csv'],
+        ['PT sUSDe Sep 26', 'export-tokenholders-for-contract-0xd1d7d99764f8a52aff007b7831cc02748b2013b5.csv']
+    ]
+    for (let [collection, holdersDumpFile] of entries) {
+        fs.appendFileSync(fname, `\n${collection}\n`)
+
+        const addys = fs.readFileSync(holdersDumpFile, 'utf8').split('\n').slice(1).map(x => x.split(',')[0].replaceAll('"', ''))
 
         // Scraping guidelines:
         // - 30s + rand() between each request
         // - If error, retry after 25s + rand()*30s
-        for(let item of addys.slice(0, 30)) {
+        for (let addy of addys.slice(0, 60)) {
             await new Promise(resolve => setTimeout(resolve, 5100 + Math.random() * 3000))
 
-            const addy = item.restaker
             console.log(addy)
 
             // write each line to a csv
-            while(true) {
+            while (true) {
                 try {
                     const arkhamData = await extractArkhamData({ page, addy })
                     const arkhamName = arkhamData.arkhamEntity ? arkhamData.arkhamEntity.name : ''
@@ -246,15 +299,16 @@ console.log(duneDashboards)
                     fs.appendFileSync(fname, `${line}\n`)
                     break
 
-                } catch(err) {
+                } catch (err) {
                     const delay = 25000 + Math.random() * 30000
-                    console.log(`retrying in ${delay/1000}s`)
+                    console.log(`retrying in ${delay / 1000}s`)
                     await new Promise(resolve => setTimeout(resolve, delay))
                     continue
                 }
             }
         }
     }
+
 }
 
 run().catch(console.error)
